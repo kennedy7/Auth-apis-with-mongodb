@@ -2,9 +2,10 @@ const User = require("../models/user");
 const passport = require("passport");
  const bcrypt = require ('bcrypt')
 
-exports.registerUser = async (req, res, next) => {
+exports.registerUser = async (req, res) => {
     const {email, name, password, passwordConfirm } = req.body;
     console.log({ name, email, password, passwordConfirm, });
+    
         if (!name || !email || !password || !passwordConfirm) {
             res.status(400).json({ message: "please enter all fields"  });
           }
@@ -14,10 +15,12 @@ exports.registerUser = async (req, res, next) => {
           if (password != passwordConfirm) {
             res.status(400).json({message: " passwords do not match"});
           }
-        
-          else{
-    try{
-        const { email, password, passwordConfirm } = req.body;
+      const existingUser = await User.findOne({ email })
+            if (existingUser){
+                return res.status(400).json({message: "user with email already exist" })
+            } 
+        else{
+            try{
             const user = await User.create({
                 email,
                 password,
@@ -40,11 +43,13 @@ exports.registerUser = async (req, res, next) => {
                    
                 }
             })
-
-    } catch (err) {
+        
+    }catch (err) {
        next(err)
     }
+    
 }
+
 }
 
 
